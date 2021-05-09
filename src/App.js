@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
-const base64url = require('base64url');
+// const base64url = require('base64url');
+import { encode, decode } from 'js-base64';
+
 
 
 function App(){
@@ -11,7 +13,9 @@ function App(){
       verifier += characters[Math.floor(Math.random() * 16)]
     }
 
-    const challenge = base64url(verifier);
+    const challenge = encode(verifier);
+    console.log(verifier);
+    console.log(challenge);
     localStorage.setItem('verifier', verifier);
     localStorage.setItem('challenge', challenge);
 
@@ -25,13 +29,15 @@ function App(){
 
   const login = () => {
     axios.post(localStorage.getItem('auth_url'), {email,password})
-    .then(response=>console.log(
-      axios.post(response.data, {'verifier':localStorage.getItem('verifier')}).then(
+    .then(response=>
+      axios.post('http://localhost:8000/oauth/verify', 
+      {
+        'verifier':localStorage.getItem('verifier'), 
+        'auth_code': response.data.auth_code
+      }).then(
         response=>console.log(response)
       )
-    ));
-
-
+    );
   }
   
   return (
